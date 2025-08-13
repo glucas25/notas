@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Boletas - Sistema Escolar</title>
+    <title>Consulta de Boletas - U.E.F. Juan León Mera</title>
     <style>
         * {
             margin: 0;
@@ -13,9 +13,11 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: white;
             min-height: 100vh;
             padding: 20px;
+            color: #333;
+            position: relative;
         }
 
         .container {
@@ -23,72 +25,261 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
+        }
+
+        .logo-container {
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: 3px dashed rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            line-height: 1.2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logo-placeholder:hover {
+            background: rgba(255,255,255,0.3);
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2.2em;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        .status-section {
-            background: #e3f2fd;
-            border-left: 5px solid #2196f3;
-            padding: 20px;
-            margin: 20px;
-            border-radius: 5px;
+        .institution-name {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #f0f8ff;
         }
 
-        .status-section h3 {
-            color: #1565c0;
+        .header p {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        /* Botón de admin en esquina */
+        .admin-access {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .admin-access:hover {
+            background: rgba(0,0,0,0.2);
+            color: #333;
+        }
+
+        /* Modal de login */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #1e3c72;
             margin-bottom: 10px;
         }
 
-        .status-indicator {
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-modal {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2a5298;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        /* Panel de administrador */
+        .admin-panel {
+            background: #f8f9fa;
+            border-left: 5px solid #1e3c72;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .admin-panel h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
-            margin: 10px 0;
         }
 
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ffc107;
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.success {
-            background: #28a745;
-            animation: none;
-        }
-
-        .status-dot.error {
+        .admin-logout {
             background: #dc3545;
-            animation: none;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: auto;
         }
 
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+        .data-stats {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #1e3c72;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .search-section {
             padding: 40px;
             background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
-            display: none;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .search-container {
@@ -113,7 +304,7 @@
 
         input[type="text"] {
             padding: 15px 20px;
-            border: 2px solid #e9ecef;
+            border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 16px;
             width: 300px;
@@ -122,13 +313,13 @@
 
         input[type="text"]:focus {
             outline: none;
-            border-color: #4facfe;
-            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
         }
 
         .btn {
             padding: 15px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -153,8 +344,9 @@
 
         .btn-refresh {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            padding: 10px 20px;
-            font-size: 14px;
+            padding: 8px 16px;
+            font-size: 12px;
+            margin-left: 10px;
         }
 
         .results-section {
@@ -163,15 +355,16 @@
         }
 
         .student-info {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
             padding: 30px;
             border-radius: 15px;
             margin-bottom: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
         }
 
         .student-info h2 {
-            color: #2c3e50;
+            color: #1e3c72;
             margin-bottom: 20px;
             font-size: 1.8em;
         }
@@ -183,10 +376,11 @@
         }
 
         .info-item {
-            background: rgba(255,255,255,0.7);
+            background: white;
             padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #1e3c72;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .info-label {
@@ -200,12 +394,12 @@
 
         .info-value {
             font-size: 16px;
-            color: #2c3e50;
+            color: #1e3c72;
             font-weight: 500;
         }
 
         .grades-section h3 {
-            color: #2c3e50;
+            color: #1e3c72;
             margin-bottom: 20px;
             font-size: 1.5em;
             text-align: center;
@@ -216,7 +410,8 @@
             background: white;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
         }
 
         .grades-table table {
@@ -225,7 +420,7 @@
         }
 
         .grades-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             padding: 15px;
             text-align: left;
@@ -237,7 +432,7 @@
 
         .grades-table td {
             padding: 15px;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid #e0e0e0;
             transition: background-color 0.2s ease;
         }
 
@@ -273,7 +468,7 @@
 
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid #1e3c72;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -307,41 +502,6 @@
             border: 1px solid #c3e6cb;
         }
 
-        .data-stats {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .stat-item {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            border-left: 3px solid #667eea;
-        }
-
-        .stat-number {
-            font-size: 18px;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-        }
-
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -373,28 +533,82 @@
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
             }
+
+            .admin-access {
+                top: 10px;
+                right: 10px;
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+
+            .modal-content {
+                padding: 20px;
+                margin: 20px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Botón de acceso de administrador -->
+    <button class="admin-access" onclick="openAdminModal()" title="Acceso Administrador">
+        ⚙️
+    </button>
+
+    <!-- Modal de login administrativo -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔐 Acceso Administrativo</h3>
+                <p>Ingrese sus credenciales de administrador</p>
+            </div>
+            <form onsubmit="loginAdmin(event)">
+                <div class="form-group">
+                    <label for="adminUser">Usuario:</label>
+                    <input type="text" id="adminUser" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPass">Contraseña:</label>
+                    <input type="password" id="adminPass" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-modal btn-secondary" onclick="closeAdminModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-modal btn-primary">
+                        Iniciar Sesión
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
+            <div class="logo-container">
+                <img id="logoImg" class="logo" style="display: none;" alt="Logo de la institución">
+                <div class="logo-placeholder" onclick="uploadLogo()">
+                    Click para<br>agregar logo
+                </div>
+                <input type="file" id="logoInput" style="display: none;" accept="image/*" onchange="handleLogo(this)">
+            </div>
+            <div class="institution-name">Unidad Educativa Fiscal "Juan León Mera"</div>
             <h1>📚 Consulta de Boletas</h1>
-            <p>Sistema Escolar - Consulta de Calificaciones</p>
+            <p>Sistema de consulta de calificaciones estudiantiles</p>
         </div>
 
-        <div class="status-section">
-            <h3>📡 Estado de Conexión</h3>
-            <div class="status-indicator">
-                <div class="status-dot" id="statusDot"></div>
-                <span id="statusText">Conectando con Google Sheets...</span>
-                <button class="btn btn-refresh" onclick="loadData()" id="refreshBtn" style="margin-left: auto;">
+        <!-- Panel de administrador (oculto por defecto) -->
+        <div class="admin-panel" id="adminPanel">
+            <h3>
+                📊 Panel Administrativo
+                <button class="admin-logout" onclick="logoutAdmin()">Cerrar Sesión</button>
+                <button class="btn-refresh" onclick="loadData()" id="refreshBtn">
                     🔄 Actualizar Datos
                 </button>
-            </div>
+            </h3>
             
-            <div class="data-stats" id="dataStats" style="display: none;">
-                <strong>Estadísticas de Datos:</strong>
+            <div class="data-stats" id="dataStats">
+                <strong>Estadísticas del Sistema:</strong>
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-number" id="totalRecords">0</div>
@@ -468,7 +682,7 @@
             </div>
 
             <div class="grades-section">
-                <h3>📊 Calificaciones - Trimestre 1</h3>
+                <h3>📊 Calificaciones por Trimestre</h3>
                 <div class="grades-table">
                     <table>
                         <thead>
@@ -500,19 +714,101 @@
         
         let studentData = [];
         let lastUpdateTime = null;
+        let isAdminLoggedIn = false;
+
+        // Credenciales de administrador
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: 'admin123!'
+        };
 
         // Cargar datos automáticamente al inicio
         window.addEventListener('load', function() {
             loadData();
         });
 
+        // Funciones de administrador
+        function openAdminModal() {
+            document.getElementById('adminModal').style.display = 'flex';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+            document.getElementById('adminUser').value = '';
+            document.getElementById('adminPass').value = '';
+        }
+
+        function loginAdmin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('adminUser').value.trim();
+            const password = document.getElementById('adminPass').value;
+            
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                isAdminLoggedIn = true;
+                document.getElementById('adminPanel').style.display = 'block';
+                closeAdminModal();
+                showSuccessMessage('Sesión administrativa iniciada correctamente');
+                
+                // Actualizar estadísticas si hay datos
+                if (studentData.length > 0) {
+                    updateStatistics();
+                }
+            } else {
+                showErrorMessage('Credenciales incorrectas. Verifique usuario y contraseña.');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            document.getElementById('adminPanel').style.display = 'none';
+            showSuccessMessage('Sesión administrativa cerrada');
+        }
+
+        // Funciones de logo
+        function uploadLogo() {
+            document.getElementById('logoInput').click();
+        }
+
+        function handleLogo(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const logoImg = document.getElementById('logoImg');
+                    const logoPlaceholder = document.querySelector('.logo-placeholder');
+                    
+                    logoImg.src = e.target.result;
+                    logoImg.style.display = 'block';
+                    logoPlaceholder.style.display = 'none';
+                    
+                    // Guardar en localStorage
+                    localStorage.setItem('institucionLogo', e.target.result);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Cargar logo guardado
+        function loadSavedLogo() {
+            const savedLogo = localStorage.getItem('institucionLogo');
+            if (savedLogo) {
+                const logoImg = document.getElementById('logoImg');
+                const logoPlaceholder = document.querySelector('.logo-placeholder');
+                
+                logoImg.src = savedLogo;
+                logoImg.style.display = 'block';
+                logoPlaceholder.style.display = 'none';
+            }
+        }
+
         // Cargar datos desde Google Sheets
         async function loadData() {
-            updateStatus('loading', 'Cargando datos desde Google Sheets...');
             showLoading();
             hideMessages();
             
-            document.getElementById('refreshBtn').disabled = true;
+            if (isAdminLoggedIn) {
+                document.getElementById('refreshBtn').disabled = true;
+            }
 
             try {
                 // Agregar timestamp para evitar cache
@@ -544,11 +840,13 @@
                         });
                         
                         lastUpdateTime = new Date();
-                        updateStatus('success', `Datos cargados exitosamente. ${studentData.length} registros encontrados.`);
-                        updateStatistics();
-                        document.getElementById('searchSection').style.display = 'block';
                         hideLoading();
-                        showSuccessMessage(`Datos cargados: ${studentData.length} registros de estudiantes.`);
+                        
+                        // Mostrar estadísticas solo si admin está logueado
+                        if (isAdminLoggedIn) {
+                            updateStatistics();
+                            showSuccessMessage(`Datos actualizados: ${studentData.length} registros cargados.`);
+                        }
                         
                         console.log('Datos cargados:', studentData.slice(0, 3)); // Mostrar primeros 3 registros
                         console.log('Columnas detectadas:', Object.keys(studentData[0] || {}));
@@ -560,21 +858,15 @@
 
             } catch (error) {
                 console.error('Error al cargar datos:', error);
-                updateStatus('error', 'Error al cargar datos: ' + error.message);
                 hideLoading();
-                showErrorMessage('No se pudieron cargar los datos. Verifique la conexión a internet y que el enlace de Google Sheets sea válido.');
+                if (isAdminLoggedIn) {
+                    showErrorMessage('No se pudieron cargar los datos. Verifique la conexión a internet y que el enlace de Google Sheets sea válido.');
+                }
             } finally {
-                document.getElementById('refreshBtn').disabled = false;
+                if (isAdminLoggedIn) {
+                    document.getElementById('refreshBtn').disabled = false;
+                }
             }
-        }
-
-        // Actualizar indicador de estado
-        function updateStatus(status, message) {
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            
-            statusDot.className = 'status-dot ' + status;
-            statusText.textContent = message;
         }
 
         // Actualizar estadísticas
@@ -588,7 +880,6 @@
             document.getElementById('uniqueStudents').textContent = uniqueStudents;
             document.getElementById('totalSubjects').textContent = totalSubjects;
             document.getElementById('lastUpdate').textContent = lastUpdateTime.toLocaleTimeString();
-            document.getElementById('dataStats').style.display = 'block';
         }
 
         // Buscar estudiante por cédula
@@ -601,7 +892,9 @@
             }
 
             if (studentData.length === 0) {
-                showErrorMessage('Los datos no están cargados. Haga clic en "Actualizar Datos" primero.');
+                showErrorMessage('Los datos no están disponibles. Intente nuevamente en unos momentos.');
+                // Cargar datos automáticamente
+                loadData();
                 return;
             }
 
@@ -621,17 +914,6 @@
 
                     if (studentRecords.length === 0) {
                         showErrorMessage(`No se encontró ningún estudiante con la cédula: ${cedula}`);
-                        
-                        // Sugerir cédulas similares
-                        const similarCedulas = studentData
-                            .map(r => r['ID_STD'])
-                            .filter(id => id && id.toString().includes(cedula.slice(0, 3)))
-                            .slice(0, 5);
-                        
-                        if (similarCedulas.length > 0) {
-                            console.log('Cédulas similares encontradas:', similarCedulas);
-                        }
-                        
                         return;
                     }
 
@@ -756,13 +1038,25 @@
             hideMessages();
         });
 
-        // Auto-actualizar datos cada 5 minutos
+        // Cargar logo guardado al inicio
+        window.addEventListener('load', function() {
+            loadSavedLogo();
+        });
+
+        // Auto-actualizar datos cada 10 minutos (solo si admin está logueado)
         setInterval(function() {
-            if (studentData.length > 0) {
+            if (studentData.length > 0 && isAdminLoggedIn) {
                 console.log('Auto-actualizando datos...');
                 loadData();
             }
-        }, 5 * 60 * 1000); // 5 minutos
+        }, 10 * 60 * 1000); // 10 minutos
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('adminModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAdminModal();
+            }
+        });
     </script>
 </body>
 </html>
