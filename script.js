@@ -306,7 +306,7 @@ function mostrarCalificaciones(studentRecords) {
         console.log('PROMEDIO original:', record['PROMEDIO'], 'tipo:', typeof record['PROMEDIO']);
         console.log('PROM original:', record['PROM'], 'tipo:', typeof record['PROM']);
         
-        // Función para limpiar y validar notas - MEJORADA
+        // Función para limpiar y validar notas - CORREGIDA PARA FORMATO DECIMAL CON COMAS
         function cleanGrade(value) {
             // Si es undefined, null o string vacío
             if (value === undefined || value === null || value === '') {
@@ -320,6 +320,9 @@ function mostrarCalificaciones(studentRecords) {
             if (cleanValue === '' || cleanValue === 'undefined' || cleanValue === 'null') {
                 return null;
             }
+            
+            // *** CORRECCIÓN: Reemplazar comas por puntos para formato decimal ***
+            cleanValue = cleanValue.replace(',', '.');
             
             // Si es un número válido (incluyendo 0)
             const numValue = parseFloat(cleanValue);
@@ -342,6 +345,24 @@ function mostrarCalificaciones(studentRecords) {
         }
         
         const estado = record['ESTADO'] || '-';
+
+        // Debug: mostrar el proceso de conversión paso a paso
+        console.log('Proceso de conversión:');
+        const trim1Raw = record['TRIM-1'];
+        const trim1Clean = trim1Raw ? trim1Raw.toString().trim().replace(',', '.') : '';
+        console.log(`  TRIM-1: "${trim1Raw}" → "${trim1Clean}" → ${cleanGrade(record['TRIM-1'])}`);
+        
+        const trim2Raw = record['TRIM-2'];
+        const trim2Clean = trim2Raw ? trim2Raw.toString().trim().replace(',', '.') : '';
+        console.log(`  TRIM-2: "${trim2Raw}" → "${trim2Clean}" → ${cleanGrade(record['TRIM-2'])}`);
+        
+        const trim3Raw = record['TRIM-3'];
+        const trim3Clean = trim3Raw ? trim3Raw.toString().trim().replace(',', '.') : '';
+        console.log(`  TRIM-3: "${trim3Raw}" → "${trim3Clean}" → ${cleanGrade(record['TRIM-3'])}`);
+        
+        const promedioRaw = record['PROMEDIO'];
+        const promedioClean = promedioRaw ? promedioRaw.toString().trim().replace(',', '.') : '';
+        console.log(`  PROMEDIO: "${promedioRaw}" → "${promedioClean}" → ${cleanGrade(record['PROMEDIO'])}`);
 
         // Debug: mostrar valores procesados
         console.log('Valores procesados:');
