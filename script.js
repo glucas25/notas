@@ -161,7 +161,7 @@ function animateCounter(elementId, target) {
     }, 16);
 }
 
-// Buscar estudiante por cédula
+// Buscar estudiante por cédula - VERSIÓN MEJORADA CON MÁS DEBUG
 function buscarEstudiante() {
     const cedula = document.getElementById('cedulaInput').value.trim();
     
@@ -183,21 +183,65 @@ function buscarEstudiante() {
 
     setTimeout(() => {
         try {
-            // Buscar estudiante por cédula (convertir ambos a string para comparación)
-            const studentRecords = studentData.filter(record => {
-                const idStd = record['ID_STD'] ? record['ID_STD'].toString().trim() : '';
-                return idStd === cedula;
+            console.log('\n=== INICIO BÚSQUEDA ===');
+            console.log('Cédula buscada:', cedula);
+            console.log('Total de registros en studentData:', studentData.length);
+            
+            // Debug: Ver algunos registros de ejemplo
+            console.log('Primeros 3 registros de studentData:');
+            studentData.slice(0, 3).forEach((record, index) => {
+                console.log(`${index + 1}.`, {
+                    'ID_STD': record['ID_STD'],
+                    'ASIGNATURA': record['ASIGNATURA'],
+                    'APELLIDOS Y NOMBRES': record['APELLIDOS Y NOMBRES']
+                });
             });
-
+            
+            // Buscar con diferentes estrategias
+            console.log('\n--- ESTRATEGIA 1: Búsqueda exacta ---');
+            let studentRecords = studentData.filter(record => {
+                const idStd = record['ID_STD'] ? record['ID_STD'].toString().trim() : '';
+                const matches = idStd === cedula;
+                if (matches) {
+                    console.log(`✓ Coincidencia exacta: ${record['ASIGNATURA']} - ID: "${idStd}"`);
+                }
+                return matches;
+            });
+            
+            console.log(`Registros encontrados con búsqueda exacta: ${studentRecords.length}`);
+            
+            // Si no encontramos nada, probar búsqueda flexible
+            if (studentRecords.length === 0) {
+                console.log('\n--- ESTRATEGIA 2: Búsqueda flexible ---');
+                studentRecords = studentData.filter(record => {
+                    const idStd = record['ID_STD'] ? record['ID_STD'].toString().trim() : '';
+                    const matches = idStd.includes(cedula) || cedula.includes(idStd);
+                    if (matches) {
+                        console.log(`~ Coincidencia flexible: ${record['ASIGNATURA']} - ID: "${idStd}"`);
+                    }
+                    return matches;
+                });
+                console.log(`Registros encontrados con búsqueda flexible: ${studentRecords.length}`);
+            }
+            
             hideLoading();
 
             if (studentRecords.length === 0) {
-                showErrorMessage(`No se encontró ningún estudiante con la cédula: ${cedula}`);
+                console.log('\n--- SUGERENCIAS DE CÉDULAS SIMILARES ---');
+                const cedulasSimilares = [...new Set(studentData.map(r => r['ID_STD']).filter(id => 
+                    id && (id.toString().includes(cedula.substring(0, 3)) || cedula.includes(id.toString().substring(0, 3)))
+                ))].slice(0, 10);
+                console.log('Cédulas similares encontradas:', cedulasSimilares);
+                
+                showErrorMessage(`No se encontró ningún estudiante con la cédula: ${cedula}. Revise la consola para ver cédulas similares.`);
                 return;
             }
 
-            // Debug: mostrar qué registros se encontraron
-            console.log('Registros encontrados para cédula', cedula, ':', studentRecords);
+            // Debug: mostrar todos los registros encontrados
+            console.log('\n=== REGISTROS ENCONTRADOS ===');
+            studentRecords.forEach((record, index) => {
+                console.log(`${index + 1}. ${record['ASIGNATURA']} - ${record['DOCENTE']}`);
+            });
 
             // Mostrar información del estudiante
             mostrarInformacionEstudiante(studentRecords[0]);
@@ -210,12 +254,14 @@ function buscarEstudiante() {
             resultsSection.style.display = 'block';
             resultsSection.classList.add('fade-in');
             
-            showSuccessMessage(`Estudiante encontrado: ${studentRecords[0]['APELLIDOS Y NOMBRES'] || 'Sin nombre'}`);
+            showSuccessMessage(`Estudiante encontrado: ${studentRecords[0]['APELLIDOS Y NOMBRES'] || 'Sin nombre'} (${studentRecords.length} asignaturas)`);
 
             // Scroll suave hacia los resultados
             setTimeout(() => {
                 resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 300);
+            
+            console.log('=== FIN BÚSQUEDA ===\n');
 
         } catch (error) {
             hideLoading();
@@ -417,26 +463,106 @@ setInterval(function() {
 // Función de debug para mostrar estructura de datos
 function debugStudentData(cedula) {
     console.log('=== DEBUGGING DATOS DEL ESTUDIANTE ===');
-    const records = studentData.filter(record => {
+    console.log(`Buscando cédula: "${cedula}"`);
+    
+    // Primero, ver TODOS los registros sin filtrar para esta cédula
+    console.log('\n--- BÚSQUEDA EN DATOS COMPLETOS ---');
+    const allMatchingRecords = studentData.filter(record => {
         const idStd = record['ID_STD'] ? record['ID_STD'].toString().trim() : '';
-        return idStd === cedula;
+        const matches = idStd === cedula;
+        if (matches) {
+            console.log(`✓ Encontrado: ${record['ASIGNATURA']} - ID_STD: "${idStd}"`);
+        }
+        return matches;
     });
     
-    console.log(`Registros encontrados para cédula ${cedula}:`, records.length);
+    console.log(`\nRegistros encontrados para cédula ${cedula}:`, allMatchingRecords.length);
     
-    records.forEach((record, index) => {
-        console.log(`\nRegistro ${index + 1}:`);
-        console.log('Asignatura:', record['ASIGNATURA']);
-        console.log('Todas las propiedades:');
+    // Mostrar todas las asignaturas encontradas
+    const asignaturas = allMatchingRecords.map(r => r['ASIGNATURA']).filter(a => a);
+    console.log('Asignaturas encontradas:', asignaturas);
+    
+    // Buscar también por cédulas similares (en caso de errores de tipeo)
+    console.log('\n--- BÚSQUEDA DE CÉDULAS SIMILARES ---');
+    const similarCedulas = [...new Set(studentData.map(r => r['ID_STD']).filter(id => 
+        id && id.toString().includes(cedula.substring(0, 5))
+    ))].slice(0, 10);
+    console.log('Cédulas similares encontradas:', similarCedulas);
+    
+    allMatchingRecords.forEach((record, index) => {
+        console.log(`\n--- REGISTRO ${index + 1}: ${record['ASIGNATURA']} ---`);
         Object.keys(record).forEach(key => {
-            if (key.includes('TRIM') || key.includes('PROM') || key === 'ESTADO') {
-                console.log(`  ${key}: "${record[key]}" (tipo: ${typeof record[key]})`);
-            }
+            console.log(`  ${key}: "${record[key]}" (tipo: ${typeof record[key]})`);
         });
     });
     
     console.log('=== FIN DEBUGGING ===');
+    return allMatchingRecords;
 }
 
-// Función helper para probar en consola
+// Función para ver todas las asignaturas disponibles
+function debugAllSubjects() {
+    console.log('=== TODAS LAS ASIGNATURAS EN EL SISTEMA ===');
+    const todasAsignaturas = [...new Set(studentData.map(r => r['ASIGNATURA']).filter(a => a))];
+    console.log('Total de asignaturas únicas:', todasAsignaturas.length);
+    todasAsignaturas.forEach((asignatura, index) => {
+        console.log(`${index + 1}. ${asignatura}`);
+    });
+    console.log('=== FIN ASIGNATURAS ===');
+    return todasAsignaturas;
+}
+
+// Función para ver todos los estudiantes
+function debugAllStudents() {
+    console.log('=== TODOS LOS ESTUDIANTES EN EL SISTEMA ===');
+    const todosEstudiantes = [...new Set(studentData.map(r => r['ID_STD']).filter(id => id))];
+    console.log('Total de cédulas únicas:', todosEstudiantes.length);
+    todosEstudiantes.slice(0, 20).forEach((cedula, index) => {
+        const nombre = studentData.find(r => r['ID_STD'] === cedula)['APELLIDOS Y NOMBRES'];
+        console.log(`${index + 1}. ${cedula} - ${nombre}`);
+    });
+    if (todosEstudiantes.length > 20) {
+        console.log(`... y ${todosEstudiantes.length - 20} más`);
+    }
+    console.log('=== FIN ESTUDIANTES ===');
+    return todosEstudiantes;
+}
+
+// Función para debug completo del filtrado
+function debugFiltering() {
+    console.log('=== DEBUG DEL PROCESO DE FILTRADO ===');
+    console.log('Total de registros cargados:', studentData.length);
+    
+    // Ver cuántos registros tienen ID_STD válido
+    const registrosConID = studentData.filter(row => {
+        const hasID = row['ID_STD'] && row['ID_STD'].toString().trim() !== '';
+        return hasID;
+    });
+    console.log('Registros con ID_STD válido:', registrosConID.length);
+    
+    // Ver registros sin ID_STD válido
+    const registrosSinID = studentData.filter(row => {
+        const hasID = row['ID_STD'] && row['ID_STD'].toString().trim() !== '';
+        return !hasID;
+    });
+    console.log('Registros SIN ID_STD válido:', registrosSinID.length);
+    
+    if (registrosSinID.length > 0) {
+        console.log('Ejemplos de registros sin ID válido:');
+        registrosSinID.slice(0, 5).forEach((registro, index) => {
+            console.log(`${index + 1}.`, {
+                'ID_STD': registro['ID_STD'],
+                'ASIGNATURA': registro['ASIGNATURA'],
+                'APELLIDOS Y NOMBRES': registro['APELLIDOS Y NOMBRES']
+            });
+        });
+    }
+    
+    console.log('=== FIN DEBUG FILTRADO ===');
+}
+
+// Funciones helper para probar en consola
 window.debugStudentData = debugStudentData;
+window.debugAllSubjects = debugAllSubjects;
+window.debugAllStudents = debugAllStudents;
+window.debugFiltering = debugFiltering;
