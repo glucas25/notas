@@ -173,14 +173,24 @@ function mostrarCalificaciones(studentRecords) {
         const row = document.createElement('tr');
         const asignatura = record['ASIGNATURA'] || '-';
         const docente = record['DOCENTE'] || '-';
-        const trim1 = record['TRIM-1'] || '-';
-        const trim2 = record['TRIM-2'] || '-';
-        const trim3 = record['TRIM-3'] || '-';
-        const promedio = record['PROMEDIO'] || record['PROM'] || '-';
+        // Asegurar que los valores sean numéricos o '-' si están vacíos
+        const trim1 = (record['TRIM-1'] && !isNaN(record['TRIM-1'])) ? record['TRIM-1'] : (record['TRIM-1'] === '0' ? '0' : '-');
+        const trim2 = (record['TRIM-2'] && !isNaN(record['TRIM-2'])) ? record['TRIM-2'] : (record['TRIM-2'] === '0' ? '0' : '-');
+        const trim3 = (record['TRIM-3'] && !isNaN(record['TRIM-3'])) ? record['TRIM-3'] : (record['TRIM-3'] === '0' ? '0' : '-');
+        // Priorizar PROMEDIO si es válido, luego PROM
+        let promedio = '-';
+        if (record['PROMEDIO'] && !isNaN(record['PROMEDIO'])) {
+            promedio = record['PROMEDIO'];
+        } else if (record['PROM'] && !isNaN(record['PROM'])) {
+            promedio = record['PROM'];
+        } else if (record['PROMEDIO'] === '0' || record['PROM'] === '0') {
+            promedio = '0';
+        }
         const estado = record['ESTADO'] || '-';
         // Función para formatear notas
         function formatGrade(grade) {
-            if (!grade || grade === '-' || isNaN(grade)) return '-';
+            if (grade === '-' || grade === '' || grade === null || typeof grade === 'undefined') return '-';
+            if (isNaN(grade)) return grade;
             const nota = parseFloat(grade);
             let gradeClass = '';
             if (nota >= 9) gradeClass = 'grade-excellent';
