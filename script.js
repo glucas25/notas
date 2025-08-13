@@ -371,7 +371,7 @@ function mostrarCalificaciones(studentRecords) {
         console.log('trim3:', trim3);
         console.log('promedio:', promedio);
 
-        // Función para formatear notas en la tabla
+        // Función para formatear notas en la tabla - CORREGIDA
         function formatGrade(nota) {
             if (nota === null || nota === undefined) {
                 return '<span class="grade-cell" style="background: #e5e7eb; color: #6b7280; border: 1px solid #d1d5db;">-</span>';
@@ -383,7 +383,36 @@ function mostrarCalificaciones(studentRecords) {
             else if (nota >= 5) gradeClass = 'grade-regular';
             else gradeClass = 'grade-poor';
             
-            return `<span class="grade-cell ${gradeClass}">${nota.toFixed(1)}</span>`;
+            // *** CORRECCIÓN: Usar más decimales para mostrar valores exactos ***
+            return `<span class="grade-cell ${gradeClass}">${nota.toFixed(2).replace(/\.?0+$/, '')}</span>`;
+        }
+
+        // *** NUEVA LÓGICA: Solo mostrar promedio y estado si hay notas en los 3 trimestres ***
+        const tieneTodasLasNotas = trim1 !== null && trim2 !== null && trim3 !== null;
+        
+        // Función especial para promedio y estado
+        function formatPromedioYEstado(valor, esTodoCompleto) {
+            if (!esTodoCompleto) {
+                return '<span class="grade-cell" style="background: #f3f4f6; color: #9ca3af; border: 1px solid #d1d5db; font-style: italic;">Pendiente</span>';
+            }
+            
+            if (valor === null || valor === undefined) {
+                return '<span class="grade-cell" style="background: #e5e7eb; color: #6b7280; border: 1px solid #d1d5db;">-</span>';
+            }
+            
+            // Si es texto (como el estado)
+            if (isNaN(valor)) {
+                return `<strong>${valor}</strong>`;
+            }
+            
+            // Si es número (como el promedio)
+            let gradeClass = '';
+            if (valor >= 9) gradeClass = 'grade-excellent';
+            else if (valor >= 7) gradeClass = 'grade-good';
+            else if (valor >= 5) gradeClass = 'grade-regular';
+            else gradeClass = 'grade-poor';
+            
+            return `<span class="grade-cell ${gradeClass}">${valor.toFixed(2).replace(/\.?0+$/, '')}</span>`;
         }
 
         row.innerHTML = `
@@ -392,8 +421,8 @@ function mostrarCalificaciones(studentRecords) {
             <td>${formatGrade(trim1)}</td>
             <td>${formatGrade(trim2)}</td>
             <td>${formatGrade(trim3)}</td>
-            <td>${formatGrade(promedio)}</td>
-            <td><strong>${estado}</strong></td>
+            <td>${formatPromedioYEstado(promedio, tieneTodasLasNotas)}</td>
+            <td>${tieneTodasLasNotas ? `<strong>${estado}</strong>` : '<span style="color: #9ca3af; font-style: italic;">Pendiente</span>'}</td>
         `;
 
         tableBody.appendChild(row);
