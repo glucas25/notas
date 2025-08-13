@@ -4,55 +4,63 @@
     box-sizing: border-box;
 }
 :root {
-    --primary: #7eb6ff; /* azul pastel */
-    --primary-light: #b3d8fd; /* azul más claro */
+    --primary: #4f8cff; /* azul más vibrante */
+    --primary-light: #a3c9fa; /* azul claro pastel */
     --secondary: #b39ddb; /* lavanda */
-    --accent: #a5f3c7; /* verde menta */
-    --background: #f6f8fb; /* gris muy claro */
-    --background-alt: #e9f0fa; /* azul muy pálido */
-    --text: #3a3a3a;
+    --accent: #7be9b5; /* verde menta */
+    --background: #f4f7fb; /* gris azulado muy claro */
+    --background-alt: #e3eaf6; /* azul pálido */
+    --text: #23283a; /* gris oscuro para mejor contraste */
     --card: #ffffff;
-    --shadow: 0 4px 24px 0 rgba(126,182,255,0.10), 0 1.5px 4px 0 rgba(163,177,198,0.10);
-    --border: #e3eaf2;
+    --shadow: 0 4px 24px 0 rgba(79,140,255,0.10), 0 1.5px 4px 0 rgba(163,177,198,0.10);
+    --border: #d6dbe6;
     --radius: 18px;
     --transition: 0.25s cubic-bezier(.4,2,.6,1);
 }
 body[data-theme="light"] {
-    --primary: #7eb6ff;
-    --primary-light: #b3d8fd;
+    --primary: #4f8cff;
+    --primary-light: #a3c9fa;
     --secondary: #b39ddb;
-    --accent: #a5f3c7;
-    --background: #f6f8fb;
-    --background-alt: #e9f0fa;
-    --text: #3a3a3a;
+    --accent: #7be9b5;
+    --background: #f4f7fb;
+    --background-alt: #e3eaf6;
+    --text: #23283a;
     --card: #ffffff;
-    --shadow: 0 4px 24px 0 rgba(126,182,255,0.10), 0 1.5px 4px 0 rgba(163,177,198,0.10);
-    --border: #e3eaf2;
+    --shadow: 0 4px 24px 0 rgba(79,140,255,0.10), 0 1.5px 4px 0 rgba(163,177,198,0.10);
+    --border: #d6dbe6;
+    --input-bg: #ffffff;
+    --input-text: #23283a;
+    --input-border: #d6dbe6;
+    --input-focus: #4f8cff;
 }
 body[data-theme="dark"] {
-    --primary: #b3d8fd;
-    --primary-light: #7eb6ff;
-    --secondary: #d1c4e9;
+    --primary: #90caf9; /* azul claro para resaltar */
+    --primary-light: #1976d2; /* azul profundo */
+    --secondary: #b39ddb;
     --accent: #7be9b5;
-    --background: #23283a;
-    --background-alt: #2d3142;
-    --text: #f0f0f0;
-    --card: #2d3142;
-    --shadow: 0 4px 24px 0 rgba(126,182,255,0.08), 0 1.5px 4px 0 rgba(163,177,198,0.08);
-    --border: #3a405a;
+    --background: #181c24; /* fondo más oscuro */
+    --background-alt: #23283a; /* azul grisáceo oscuro */
+    --text: #f4f7fb; /* texto claro */
+    --card: #23283a; /* tarjetas más oscuras */
+    --shadow: 0 4px 24px 0 rgba(79,140,255,0.08), 0 1.5px 4px 0 rgba(163,177,198,0.08);
+    --border: #2d3142;
+    --input-bg: #2d3142;
+    --input-text: #f4f7fb;
+    --input-border: #3d4255;
+    --input-focus: #90caf9;
 }
 @media (prefers-color-scheme: dark) {
     :root {
-        --primary: #b3d8fd;
-        --primary-light: #7eb6ff;
-        --secondary: #d1c4e9;
+        --primary: #90caf9;
+        --primary-light: #1976d2;
+        --secondary: #b39ddb;
         --accent: #7be9b5;
-        --background: #23283a;
-        --background-alt: #2d3142;
-        --text: #f0f0f0;
-        --card: #2d3142;
-        --shadow: 0 4px 24px 0 rgba(126,182,255,0.08), 0 1.5px 4px 0 rgba(163,177,198,0.08);
-        --border: #3a405a;
+        --background: #181c24;
+        --background-alt: #23283a;
+        --text: #f4f7fb;
+        --card: #23283a;
+        --shadow: 0 4px 24px 0 rgba(79,140,255,0.08), 0 1.5px 4px 0 rgba(163,177,198,0.08);
+        --border: #2d3142;
     }
 }
 body {
@@ -283,19 +291,19 @@ label {
 }
 input[type="text"], input[type="password"] {
     padding: 15px 20px;
-    border: 1.5px solid var(--border);
+    border: 1.5px solid var(--input-border);
     border-radius: calc(var(--radius) - 8px);
     font-size: 16px;
-    background: var(--background-alt);
-    color: var(--text);
+    background: var(--input-bg);
+    color: var(--input-text);
     transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
     box-shadow: 0 1.5px 4px 0 rgba(163,177,198,0.08);
 }
 input[type="text"]:focus, input[type="password"]:focus {
     outline: none;
-    border-color: var(--primary);
+    border-color: var(--input-focus);
     box-shadow: 0 0 0 3px var(--primary-light);
-    background: #fafdff;
+    background: var(--input-bg);
 }
 .btn {
     padding: 15px 30px;

@@ -393,7 +393,7 @@ function mostrarCalificaciones(studentRecords) {
         // Función especial para promedio y estado
         function formatPromedioYEstado(valor, esTodoCompleto) {
             if (!esTodoCompleto) {
-                return '<span class="grade-cell" style="background: #f3f4f6; color: #9ca3af; border: 1px solid #d1d5db; font-style: italic;">Pendiente</span>';
+                return '<span class="grade-cell" style="background: #f3f4f6; color: #9ca3af; border: 1px solid #d1d5db; font-style: italic;">-</span>';
             }
             
             if (valor === null || valor === undefined) {
@@ -422,7 +422,7 @@ function mostrarCalificaciones(studentRecords) {
             <td>${formatGrade(trim2)}</td>
             <td>${formatGrade(trim3)}</td>
             <td>${formatPromedioYEstado(promedio, tieneTodasLasNotas)}</td>
-            <td>${tieneTodasLasNotas ? `<strong>${estado}</strong>` : '<span style="color: #9ca3af; font-style: italic;">Pendiente</span>'}</td>
+            <td>${tieneTodasLasNotas ? `<strong>${estado}</strong>` : '<span style="color: #9ca3af; font-style: italic;">-</span>'}</td>
         `;
 
         tableBody.appendChild(row);
