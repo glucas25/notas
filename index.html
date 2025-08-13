@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Boletas - Sistema Escolar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .status-section {
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 5px;
+        }
+
+        .status-section h3 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ffc107;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.success {
+            background: #28a745;
+            animation: none;
+        }
+
+        .status-dot.error {
+            background: #dc3545;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .search-section {
+            padding: 40px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: none;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-refresh {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        .results-section {
+            padding: 40px;
+            display: none;
+        }
+
+        .student-info {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .student-info h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            background: rgba(255,255,255,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .grades-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        .grades-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .grades-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grades-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+        }
+
+        .grades-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+        }
+
+        .grades-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .grades-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .grade-cell {
+            font-weight: 600;
+            text-align: center;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            display: inline-block;
+            min-width: 60px;
+        }
+
+        .grade-excellent { background: #28a745; }
+        .grade-good { background: #17a2b8; }
+        .grade-regular { background: #ffc107; color: #333; }
+        .grade-poor { background: #dc3545; }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message, .success-message {
+            padding: 15px;
+            margin: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .data-stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 3px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            input[type="text"] {
+                width: 100%;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .grades-table {
+                font-size: 14px;
+            }
+            
+            .grades-table th,
+            .grades-table td {
+                padding: 10px 8px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Consulta de Boletas</h1>
+            <p>Sistema Escolar - Consulta de Calificaciones</p>
+        </div>
+
+        <div class="status-section">
+            <h3>📡 Estado de Conexión</h3>
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Conectando con Google Sheets...</span>
+                <button class="btn btn-refresh" onclick="loadData()" id="refreshBtn" style="margin-left: auto;">
+                    🔄 Actualizar Datos
+                </button>
+            </div>
+            
+            <div class="data-stats" id="dataStats" style="display: none;">
+                <strong>Estadísticas de Datos:</strong>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalRecords">0</div>
+                        <div class="stat-label">Total Registros</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="uniqueStudents">0</div>
+                        <div class="stat-label">Estudiantes únicos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalSubjects">0</div>
+                        <div class="stat-label">Asignaturas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="lastUpdate">-</div>
+                        <div class="stat-label">Última actualización</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-section" id="searchSection">
+            <div class="search-container">
+                <div class="input-group">
+                    <label for="cedulaInput">Número de Cédula:</label>
+                    <input type="text" id="cedulaInput" placeholder="Ingrese el número de cédula del estudiante">
+                </div>
+                <button class="btn" onclick="buscarEstudiante()" id="searchBtn">
+                    🔍 Buscar Estudiante
+                </button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="loadingText">Cargando datos desde Google Sheets...</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="student-info" id="studentInfo">
+                <h2>📋 Información del Estudiante</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Nombre Completo</div>
+                        <div class="info-value" id="studentName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Cédula</div>
+                        <div class="info-value" id="studentId">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Subnivel</div>
+                        <div class="info-value" id="studentSubnivel">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Curso</div>
+                        <div class="info-value" id="studentCurso">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Paralelo</div>
+                        <div class="info-value" id="studentParalelo">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Período Lectivo</div>
+                        <div class="info-value" id="studentPeriodo">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grades-section">
+                <h3>📊 Calificaciones - Trimestre 1</h3>
+                <div class="grades-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Asignatura</th>
+                                <th>Docente</th>
+                                <th>Trimestre 1</th>
+                                <th>Trimestre 2</th>
+                                <th>Trimestre 3</th>
+                                <th>Promedio</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gradesTableBody">
+                            <!-- Los datos se cargarán aquí dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PapaParse para procesar CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <script>
+        // URL de tu Google Sheet configurada como CSV
+        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6KGWK1pBH2_6EiBi6sDBwRuC-3vyXvXZ25URB4znpJ3XXTJ5qFxDxT2BJ1hFkn6lgKCfNW70UDifN/pub?gid=1151777655&single=true&output=csv';
+        
+        let studentData = [];
+        let lastUpdateTime = null;
+
+        // Cargar datos automáticamente al inicio
+        window.addEventListener('load', function() {
+            loadData();
+        });
+
+        // Cargar datos desde Google Sheets
+        async function loadData() {
+            updateStatus('loading', 'Cargando datos desde Google Sheets...');
+            showLoading();
+            hideMessages();
+            
+            document.getElementById('refreshBtn').disabled = true;
+
+            try {
+                // Agregar timestamp para evitar cache
+                const url = GOOGLE_SHEET_URL + '&t=' + new Date().getTime();
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                
+                // Parsear CSV con PapaParse
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    transformHeader: function(header) {
+                        // Limpiar encabezados
+                        return header.trim();
+                    },
+                    complete: function(results) {
+                        if (results.errors.length > 0) {
+                            console.warn('Errores en el CSV:', results.errors);
+                        }
+                        
+                        studentData = results.data.filter(row => {
+                            // Filtrar filas que tengan al menos ID_STD
+                            return row['ID_STD'] && row['ID_STD'].toString().trim() !== '';
+                        });
+                        
+                        lastUpdateTime = new Date();
+                        updateStatus('success', `Datos cargados exitosamente. ${studentData.length} registros encontrados.`);
+                        updateStatistics();
+                        document.getElementById('searchSection').style.display = 'block';
+                        hideLoading();
+                        showSuccessMessage(`Datos cargados: ${studentData.length} registros de estudiantes.`);
+                        
+                        console.log('Datos cargados:', studentData.slice(0, 3)); // Mostrar primeros 3 registros
+                        console.log('Columnas detectadas:', Object.keys(studentData[0] || {}));
+                    },
+                    error: function(error) {
+                        throw new Error('Error al parsear CSV: ' + error.message);
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                updateStatus('error', 'Error al cargar datos: ' + error.message);
+                hideLoading();
+                showErrorMessage('No se pudieron cargar los datos. Verifique la conexión a internet y que el enlace de Google Sheets sea válido.');
+            } finally {
+                document.getElementById('refreshBtn').disabled = false;
+            }
+        }
+
+        // Actualizar indicador de estado
+        function updateStatus(status, message) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            statusDot.className = 'status-dot ' + status;
+            statusText.textContent = message;
+        }
+
+        // Actualizar estadísticas
+        function updateStatistics() {
+            if (studentData.length === 0) return;
+
+            const uniqueStudents = [...new Set(studentData.map(row => row['ID_STD']))].length;
+            const totalSubjects = [...new Set(studentData.map(row => row['ASIGNATURA']))].filter(s => s).length;
+            
+            document.getElementById('totalRecords').textContent = studentData.length;
+            document.getElementById('uniqueStudents').textContent = uniqueStudents;
+            document.getElementById('totalSubjects').textContent = totalSubjects;
+            document.getElementById('lastUpdate').textContent = lastUpdateTime.toLocaleTimeString();
+            document.getElementById('dataStats').style.display = 'block';
+        }
+
+        // Buscar estudiante por cédula
+        function buscarEstudiante() {
+            const cedula = document.getElementById('cedulaInput').value.trim();
+            
+            if (!cedula) {
+                showErrorMessage('Por favor ingrese un número de cédula');
+                return;
+            }
+
+            if (studentData.length === 0) {
+                showErrorMessage('Los datos no están cargados. Haga clic en "Actualizar Datos" primero.');
+                return;
+            }
+
+            showLoading();
+            document.getElementById('loadingText').textContent = 'Buscando estudiante...';
+            hideMessages();
+
+            setTimeout(() => {
+                try {
+                    // Buscar estudiante por cédula (convertir ambos a string para comparación)
+                    const studentRecords = studentData.filter(record => {
+                        const idStd = record['ID_STD'] ? record['ID_STD'].toString().trim() : '';
+                        return idStd === cedula;
+                    });
+
+                    hideLoading();
+
+                    if (studentRecords.length === 0) {
+                        showErrorMessage(`No se encontró ningún estudiante con la cédula: ${cedula}`);
+                        
+                        // Sugerir cédulas similares
+                        const similarCedulas = studentData
+                            .map(r => r['ID_STD'])
+                            .filter(id => id && id.toString().includes(cedula.slice(0, 3)))
+                            .slice(0, 5);
+                        
+                        if (similarCedulas.length > 0) {
+                            console.log('Cédulas similares encontradas:', similarCedulas);
+                        }
+                        
+                        return;
+                    }
+
+                    // Mostrar información del estudiante
+                    mostrarInformacionEstudiante(studentRecords[0]);
+                    
+                    // Mostrar calificaciones
+                    mostrarCalificaciones(studentRecords);
+                    
+                    // Mostrar sección de resultados
+                    document.getElementById('resultsSection').style.display = 'block';
+                    showSuccessMessage(`Estudiante encontrado: ${studentRecords[0]['APELLIDOS Y NOMBRES'] || 'Sin nombre'}`);
+
+                } catch (error) {
+                    hideLoading();
+                    showErrorMessage('Error en la búsqueda: ' + error.message);
+                    console.error('Error:', error);
+                }
+            }, 500);
+        }
+
+        // Mostrar información del estudiante
+        function mostrarInformacionEstudiante(studentRecord) {
+            document.getElementById('studentName').textContent = studentRecord['APELLIDOS Y NOMBRES'] || '-';
+            document.getElementById('studentId').textContent = studentRecord['ID_STD'] || '-';
+            document.getElementById('studentSubnivel').textContent = studentRecord['SUBNIVEL'] || '-';
+            document.getElementById('studentCurso').textContent = studentRecord['CURSO'] || '-';
+            document.getElementById('studentParalelo').textContent = studentRecord['PARALELO'] || '-';
+            document.getElementById('studentPeriodo').textContent = studentRecord['PERIODO LECTIVO'] || '-';
+        }
+
+        // Mostrar calificaciones
+        function mostrarCalificaciones(studentRecords) {
+            const tableBody = document.getElementById('gradesTableBody');
+            tableBody.innerHTML = '';
+
+            studentRecords.forEach(record => {
+                const row = document.createElement('tr');
+                
+                const asignatura = record['ASIGNATURA'] || '-';
+                const docente = record['DOCENTE'] || '-';
+                const trim1 = record['TRIM-1'] || '-';
+                const trim2 = record['TRIM-2'] || '-';
+                const trim3 = record['TRIM-3'] || '-';
+                const promedio = record['PROMEDIO'] || record['PROM'] || '-';
+                const estado = record['ESTADO'] || '-';
+
+                // Función para formatear notas
+                function formatGrade(grade) {
+                    if (!grade || grade === '-' || isNaN(grade)) return '-';
+                    
+                    const nota = parseFloat(grade);
+                    let gradeClass = '';
+                    
+                    if (nota >= 9) gradeClass = 'grade-excellent';
+                    else if (nota >= 7) gradeClass = 'grade-good';
+                    else if (nota >= 5) gradeClass = 'grade-regular';
+                    else gradeClass = 'grade-poor';
+                    
+                    return `<span class="grade-cell ${gradeClass}">${nota.toFixed(1)}</span>`;
+                }
+
+                row.innerHTML = `
+                    <td><strong>${asignatura}</strong></td>
+                    <td>${docente}</td>
+                    <td>${formatGrade(trim1)}</td>
+                    <td>${formatGrade(trim2)}</td>
+                    <td>${formatGrade(trim3)}</td>
+                    <td>${formatGrade(promedio)}</td>
+                    <td><strong>${estado}</strong></td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Funciones de UI
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('searchBtn').disabled = true;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('searchBtn').disabled = false;
+            document.getElementById('loadingText').textContent = 'Cargando datos desde Google Sheets...';
+        }
+
+        function showErrorMessage(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 8000);
+        }
+
+        function showSuccessMessage(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // Event listeners
+        document.getElementById('cedulaInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                buscarEstudiante();
+            }
+        });
+
+        // Limpiar resultados cuando se cambia la cédula
+        document.getElementById('cedulaInput').addEventListener('input', function() {
+            document.getElementById('resultsSection').style.display = 'none';
+            hideMessages();
+        });
+
+        // Auto-actualizar datos cada 5 minutos
+        setInterval(function() {
+            if (studentData.length > 0) {
+                console.log('Auto-actualizando datos...');
+                loadData();
+            }
+        }, 5 * 60 * 1000); // 5 minutos
+    </script>
+</body>
+</html>
