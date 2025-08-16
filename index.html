@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consulta de Boletas - U.E.F. Juan León Mera</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin-stats.css">
     <script src="theme.js"></script>
 </head>
 <body>
@@ -63,7 +64,7 @@
             </h3>
             
             <div class="data-stats" id="dataStats">
-                <strong>Estadísticas del Sistema:</strong>
+                <strong>Estadísticas Generales del Sistema:</strong>
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-number" id="totalRecords">0</div>
@@ -83,16 +84,28 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Nueva sección de estadísticas detalladas -->
+            <div class="detailed-stats" id="detailedStats">
+                <!-- Las estadísticas detalladas se cargarán aquí dinámicamente -->
+            </div>
         </div>
 
         <div class="search-section" id="searchSection">
             <div class="search-container">
                 <div class="input-group">
                     <label for="cedulaInput">Número de Cédula:</label>
-                    <input type="text" id="cedulaInput" placeholder="Ingrese el número de cédula del estudiante">
+                    <div class="input-with-button">
+                        <input type="text" id="cedulaInput" placeholder="Ingrese el número de cédula del estudiante">
+                        <button class="btn" onclick="buscarEstudiante()" id="searchBtn">
+                            🔍 Buscar Estudiante
+                        </button>
+                        <button class="btn btn-secondary" onclick="nuevaBusqueda()" id="newSearchBtn" style="display: none;">
+                            ↩️ Nueva Búsqueda
+                        </button>
+                    </div>
                 </div>
-                <button class="btn" onclick="buscarEstudiante()" id="searchBtn">
-                    🔍 Buscar Estudiante
+            
                 </button>
             </div>
         </div>
@@ -138,12 +151,11 @@
 
             <div class="grades-section">
                 <h3>📊 Calificaciones por Trimestre</h3>
-                <div class="grades-table">
-                    <table>
+                <div class="table-container">
+                    <table class="grades-table">
                         <thead>
                             <tr>
                                 <th>Asignatura</th>
-                                <th>Docente</th>
                                 <th>Trimestre 1</th>
                                 <th>Trimestre 2</th>
                                 <th>Trimestre 3</th>

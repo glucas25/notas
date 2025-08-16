@@ -1,51 +1,98 @@
-// URL de tu Google Sheet configurada como CSV
-const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6KGWK1pBH2_6EiBi6sDBwRuC-3vyXvXZ25URB4znpJ3XXTJ5qFxDxT2BJ1hFkn6lgKCfNW70UDifN/pub?gid=1151777655&single=true&output=csv';
+/**
+ * CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES
+ * ----------------------------------------
+ * En esta sección definimos las variables principales que usaremos en toda la aplicación
+ */
 
-let studentData = [];
-let lastUpdateTime = null;
-let isAdminLoggedIn = false;
+// Esta es la URL donde está publicada nuestra hoja de Google Sheets como CSV
+// El formato CSV es como una tabla de Excel pero en texto plano, más fácil de procesar
+const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQHavXVZRWfLBb3ShB2Xc8BpowBE5UU0vbNt6hDkUuoNMyKxWyCRSZmQMmAuvX-7OpjpMmfWHIRdpsN/pub?gid=1366029331&single=true&output=csv';
+// Variables globales que usaremos en toda la aplicación
+let studentData = [];        // Aquí guardaremos todos los datos de los estudiantes
+let lastUpdateTime = null;   // Guarda la última vez que actualizamos los datos
+let isAdminLoggedIn = false; // Controla si el administrador ha iniciado sesión
 
-// Credenciales de administrador
+// Objeto con las credenciales del administrador
+// En un sistema real, esto debería estar en el servidor por seguridad
 const ADMIN_CREDENTIALS = {
     username: 'admin',
     password: 'admin123!'
 };
 
-// Cargar datos automáticamente al inicio
+/**
+ * INICIALIZACIÓN DE LA APLICACIÓN
+ * ------------------------------
+ * Este evento se dispara cuando la página termina de cargar
+ */
 window.addEventListener('load', function() {
+    // Cargamos los datos inmediatamente al abrir la página
     loadData();
-    // Agregar clases de animación a elementos
+    
+    // Agregamos una animación suave a la sección de búsqueda
+    // La clase 'fade-in' hace que el elemento aparezca gradualmente
     document.querySelector('.search-section').classList.add('fade-in');
 });
 
-// Funciones de administrador
+/**
+ * FUNCIONES DE ADMINISTRACIÓN
+ * --------------------------
+ * Este grupo de funciones maneja todo lo relacionado con el panel de administrador
+ */
+
+/**
+ * Abre el modal (ventana flotante) de inicio de sesión del administrador
+ * setTimeout: espera 300 milisegundos antes de poner el foco en el campo de usuario
+ * para que la animación del modal se vea suave
+ */
 function openAdminModal() {
+    // Hacemos visible el modal cambiando su display a 'flex'
     document.getElementById('adminModal').style.display = 'flex';
+    
+    // Después de 300ms, ponemos el foco en el campo de usuario
     setTimeout(() => {
         document.getElementById('adminUser').focus();
     }, 300);
 }
 
+/**
+ * Cierra el modal de administrador y limpia los campos
+ * Es importante limpiar los campos por seguridad
+ */
 function closeAdminModal() {
+    // Ocultamos el modal
     document.getElementById('adminModal').style.display = 'none';
+    // Limpiamos los campos de usuario y contraseña
     document.getElementById('adminUser').value = '';
     document.getElementById('adminPass').value = '';
 }
 
+/**
+ * Maneja el proceso de inicio de sesión del administrador
+ * @param {Event} event - El evento del formulario
+ */
 function loginAdmin(event) {
+    // Prevenimos que el formulario recargue la página
     event.preventDefault();
     
+    // Obtenemos los valores de usuario y contraseña
+    // trim() elimina espacios al inicio y final del texto
     const username = document.getElementById('adminUser').value.trim();
     const password = document.getElementById('adminPass').value;
     
+    // Verificamos si las credenciales son correctas
     if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+        // Marcamos que el admin está conectado
         isAdminLoggedIn = true;
+        
+        // Mostramos el panel de administrador con una animación suave
         document.getElementById('adminPanel').style.display = 'block';
         document.getElementById('adminPanel').classList.add('fade-in');
+        
+        // Cerramos el modal y mostramos mensaje de éxito
         closeAdminModal();
         showSuccessMessage('Sesión administrativa iniciada correctamente');
         
-        // Actualizar estadísticas si hay datos
+        // Si ya tenemos datos cargados, actualizamos las estadísticas
         if (studentData.length > 0) {
             updateStatistics();
         }
@@ -128,6 +175,159 @@ async function loadData() {
     }
 }
 
+/**
+ * CÁLCULO DE ESTADÍSTICAS DETALLADAS
+ * ---------------------------------
+ * Esta sección contiene las funciones para calcular estadísticas avanzadas
+ * que se muestran en el panel de administrador
+ */
+
+/**
+ * Calcula todas las estadísticas detalladas del sistema
+ * Incluye mejores promedios, promedios por curso, por asignatura, etc.
+ */
+function calculateDetailedStats() {
+    /**
+     * Función auxiliar que limpia y convierte notas a números
+     * Por ejemplo:
+     * - "8,5" → 8.5
+     * - "9.0" → 9.0
+     * - "" → null
+     */
+    function cleanGrade(value) {
+        // Si el valor está vacío o no existe, retornamos null
+        if (value === undefined || value === null || value === '') return null;
+        // Convertimos a texto, quitamos espacios y cambiamos comas por puntos
+        let cleanValue = value.toString().trim().replace(',', '.');
+        // Convertimos a número
+        const numValue = parseFloat(cleanValue);
+        // Si es un número válido lo retornamos, si no, retornamos null
+        return !isNaN(numValue) ? numValue : null;
+    }
+
+    /**
+     * Calcula el promedio de todas las notas de un estudiante
+     * @param {Array} records - Lista de registros (notas) del estudiante
+     * @returns {number|null} - El promedio o null si no hay notas válidas
+     */
+    function getStudentAverage(records) {
+        // Filtramos las asignaturas que no deben contar para el promedio
+        const validRecords = records.filter(record => {
+            const asignatura = record['ASIGNATURA']?.toUpperCase();
+            const subnivel = record['SUBNIVEL'];
+            const isQualitative = isQualitativeSubject(asignatura, subnivel);
+            
+            // Solo incluimos en el promedio las asignaturas que no son cualitativas
+            return !isQualitative;
+        });
+
+        // Obtenemos todas las notas válidas del estudiante
+        const validGrades = validRecords
+            .map(r => cleanGrade(r['PROMEDIO']) || cleanGrade(r['PROM']))
+            .filter(grade => grade !== null);
+            
+        // Si no hay notas válidas, retornamos null
+        if (validGrades.length === 0) return null;
+        
+        // Calculamos el promedio: suma de todas las notas dividido por la cantidad
+        return validGrades.reduce((a, b) => a + b, 0) / validGrades.length;
+    }
+
+    // Agrupar por estudiante
+    const studentGroups = {};
+    studentData.forEach(record => {
+        const id = record['ID_STD'];
+        if (!id) return;
+        if (!studentGroups[id]) {
+            studentGroups[id] = {
+                id: id,
+                name: record['APELLIDOS Y NOMBRES'],
+                curso: record['CURSO'],
+                paralelo: record['PARALELO'],
+                records: []
+            };
+        }
+        studentGroups[id].records.push(record);
+    });
+
+    // Calcular promedios por estudiante
+    const studentAverages = Object.values(studentGroups)
+        .map(student => ({
+            ...student,
+            promedio: getStudentAverage(student.records)
+        }))
+        .filter(student => student.promedio !== null);
+
+    // Mejores y peores estudiantes
+    const sortedStudents = [...studentAverages].sort((a, b) => b.promedio - a.promedio);
+    const topStudents = sortedStudents.slice(0, 5);
+    const bottomStudents = sortedStudents.slice(-5).reverse();
+
+    // Agrupar por curso
+    const courseGroups = {};
+    studentAverages.forEach(student => {
+        const courseKey = `${student.curso} ${student.paralelo}`;
+        if (!courseGroups[courseKey]) {
+            courseGroups[courseKey] = [];
+        }
+        courseGroups[courseKey].push(student);
+    });
+
+    // Calcular promedios por curso
+    const courseAverages = Object.entries(courseGroups)
+        .map(([course, students]) => ({
+            course,
+            average: students.reduce((acc, student) => acc + student.promedio, 0) / students.length,
+            studentCount: students.length
+        }))
+        .sort((a, b) => b.average - a.average);
+
+    // Agrupar por asignatura
+    const subjectGroups = {};
+    studentData.forEach(record => {
+        const subject = record['ASIGNATURA'];
+        if (!subject) return;
+        if (!subjectGroups[subject]) {
+            subjectGroups[subject] = {
+                name: subject,
+                grades: [],
+                teachers: new Set()
+            };
+        }
+        const grade = cleanGrade(record['PROMEDIO']) || cleanGrade(record['PROM']);
+        if (grade !== null) {
+            subjectGroups[subject].grades.push(grade);
+        }
+        if (record['DOCENTE']) {
+            subjectGroups[subject].teachers.add(record['DOCENTE']);
+        }
+    });
+
+    // Calcular promedios por asignatura
+    const subjectAverages = Object.entries(subjectGroups)
+        .map(([subject, data]) => ({
+            subject,
+            average: data.grades.reduce((acc, grade) => acc + grade, 0) / data.grades.length,
+            teachers: Array.from(data.teachers),
+            studentCount: data.grades.length
+        }))
+        .sort((a, b) => b.average - a.average);
+
+    // Lista de docentes
+    const teachersList = [...new Set(studentData
+        .map(record => record['DOCENTE'])
+        .filter(teacher => teacher)
+    )].sort();
+
+    return {
+        topStudents,
+        bottomStudents,
+        courseAverages,
+        subjectAverages,
+        teachersList
+    };
+}
+
 // Actualizar estadísticas
 function updateStatistics() {
     if (studentData.length === 0) return;
@@ -135,11 +335,84 @@ function updateStatistics() {
     const uniqueStudents = [...new Set(studentData.map(row => row['ID_STD']))].length;
     const totalSubjects = [...new Set(studentData.map(row => row['ASIGNATURA']))].filter(s => s).length;
     
-    // Animación de números
+    // Animación de números básicos
     animateCounter('totalRecords', studentData.length);
     animateCounter('uniqueStudents', uniqueStudents);
     animateCounter('totalSubjects', totalSubjects);
     document.getElementById('lastUpdate').textContent = lastUpdateTime.toLocaleTimeString();
+
+    // Calcular y mostrar estadísticas detalladas
+    const stats = calculateDetailedStats();
+    
+    // Actualizar estadísticas detalladas en el DOM
+    const detailedStats = document.getElementById('detailedStats');
+    if (detailedStats) {
+        detailedStats.innerHTML = `
+            <div class="stats-section">
+                <h4>🏆 Mejores Promedios Generales</h4>
+                <div class="stats-list">
+                    ${stats.topStudents.map((student, index) => `
+                        <div class="stat-item">
+                            <span class="rank">#${index + 1}</span>
+                            <span class="name">${student.name}</span>
+                            <span class="value">${student.promedio.toFixed(2)}</span>
+                            <span class="details">${student.curso} ${student.paralelo}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h4>⚠️ Promedios Más Bajos</h4>
+                <div class="stats-list">
+                    ${stats.bottomStudents.map((student, index) => `
+                        <div class="stat-item">
+                            <span class="rank">#${index + 1}</span>
+                            <span class="name">${student.name}</span>
+                            <span class="value">${student.promedio.toFixed(2)}</span>
+                            <span class="details">${student.curso} ${student.paralelo}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h4>📊 Promedios por Curso</h4>
+                <div class="stats-list">
+                    ${stats.courseAverages.map((course, index) => `
+                        <div class="stat-item">
+                            <span class="name">${course.course}</span>
+                            <span class="value">${course.average.toFixed(2)}</span>
+                            <span class="details">${course.studentCount} estudiantes</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h4>📚 Promedios por Asignatura</h4>
+                <div class="stats-list">
+                    ${stats.subjectAverages.map(subject => `
+                        <div class="stat-item">
+                            <span class="name">${subject.subject}</span>
+                            <span class="value">${subject.average.toFixed(2)}</span>
+                            <span class="details">${subject.studentCount} estudiantes</span>
+                            <span class="teachers">Docentes: ${subject.teachers.join(', ')}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h4>👨‍🏫 Lista de Docentes</h4>
+                <div class="teachers-list">
+                    ${stats.teachersList.map(teacher => `
+                        <div class="teacher-item">${teacher}</div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
 }
 
 // Animación de contador
@@ -161,7 +434,28 @@ function animateCounter(elementId, target) {
     }, 16);
 }
 
-// Buscar estudiante por cédula - VERSIÓN MEJORADA CON MÁS DEBUG
+function nuevaBusqueda() {
+    // Limpiar el campo de cédula
+    document.getElementById('cedulaInput').value = '';
+    
+    // Mostrar el botón de búsqueda y ocultar el de nueva búsqueda
+    document.getElementById('searchBtn').style.display = 'block';
+    document.getElementById('newSearchBtn').style.display = 'none';
+    
+    // Ocultar la sección de resultados con animación
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.classList.remove('fade-in');
+    setTimeout(() => {
+        resultsSection.style.display = 'none';
+    }, 300);
+    
+    // Ocultar mensajes
+    hideMessages();
+    
+    // Poner el foco en el campo de cédula
+    document.getElementById('cedulaInput').focus();
+}
+
 function buscarEstudiante() {
     const cedula = document.getElementById('cedulaInput').value.trim();
     
@@ -172,7 +466,6 @@ function buscarEstudiante() {
 
     if (studentData.length === 0) {
         showErrorMessage('Los datos no están disponibles. Intente nuevamente en unos momentos.');
-        // Cargar datos automáticamente
         loadData();
         return;
     }
@@ -183,22 +476,10 @@ function buscarEstudiante() {
 
     setTimeout(() => {
         try {
-            console.log('\n=== INICIO BÚSQUEDA ===');
-            console.log('Cédula buscada:', cedula);
-            console.log('Total de registros en studentData:', studentData.length);
+            console.log('\n=== INICIANDO BÚSQUEDA ===');
+            console.log(`Buscando cédula: "${cedula}"`);
             
-            // Debug: Ver algunos registros de ejemplo
-            console.log('Primeros 3 registros de studentData:');
-            studentData.slice(0, 3).forEach((record, index) => {
-                console.log(`${index + 1}.`, {
-                    'ID_STD': record['ID_STD'],
-                    'ASIGNATURA': record['ASIGNATURA'],
-                    'APELLIDOS Y NOMBRES': record['APELLIDOS Y NOMBRES']
-                });
-            });
-            
-            // Buscar con diferentes estrategias
-            console.log('\n--- ESTRATEGIA 1: Búsqueda exacta ---');
+            // Búsqueda con coincidencia exacta primero
             let studentRecords = studentData.filter(record => {
                 const idStd = record['ID_STD'] ? record['ID_STD'].toString().trim() : '';
                 const matches = idStd === cedula;
@@ -254,6 +535,10 @@ function buscarEstudiante() {
             resultsSection.style.display = 'block';
             resultsSection.classList.add('fade-in');
             
+            // Ocultar botón de búsqueda y mostrar botón de nueva búsqueda
+            document.getElementById('searchBtn').style.display = 'none';
+            document.getElementById('newSearchBtn').style.display = 'block';
+            
             showSuccessMessage(`Estudiante encontrado: ${studentRecords[0]['APELLIDOS Y NOMBRES'] || 'Sin nombre'} (${studentRecords.length} asignaturas)`);
 
             // Scroll suave hacia los resultados
@@ -286,10 +571,6 @@ function mostrarCalificaciones(studentRecords) {
     const tableBody = document.getElementById('gradesTableBody');
     tableBody.innerHTML = '';
 
-    console.log('=== DEBUG: Registros del estudiante ===');
-    console.log('Cantidad de registros:', studentRecords.length);
-    console.log('Datos completos:', studentRecords);
-
     studentRecords.forEach((record, index) => {
         const row = document.createElement('tr');
         row.style.animationDelay = `${index * 0.1}s`;
@@ -297,15 +578,7 @@ function mostrarCalificaciones(studentRecords) {
         const asignatura = record['ASIGNATURA'] || '-';
         const docente = record['DOCENTE'] || '-';
         
-        // Debug: mostrar todos los campos de notas disponibles
-        console.log(`\n--- ${asignatura} ---`);
-        console.log('Campos disponibles:', Object.keys(record));
-        console.log('TRIM-1 original:', record['TRIM-1'], 'tipo:', typeof record['TRIM-1']);
-        console.log('TRIM-2 original:', record['TRIM-2'], 'tipo:', typeof record['TRIM-2']);
-        console.log('TRIM-3 original:', record['TRIM-3'], 'tipo:', typeof record['TRIM-3']);
-        console.log('PROMEDIO original:', record['PROMEDIO'], 'tipo:', typeof record['PROMEDIO']);
-        console.log('PROM original:', record['PROM'], 'tipo:', typeof record['PROM']);
-        
+
         // Función para limpiar y validar notas - CORREGIDA PARA FORMATO DECIMAL CON COMAS
         function cleanGrade(value) {
             // Si es undefined, null o string vacío
@@ -346,45 +619,70 @@ function mostrarCalificaciones(studentRecords) {
         
         const estado = record['ESTADO'] || '-';
 
-        // Debug: mostrar el proceso de conversión paso a paso
-        console.log('Proceso de conversión:');
-        const trim1Raw = record['TRIM-1'];
-        const trim1Clean = trim1Raw ? trim1Raw.toString().trim().replace(',', '.') : '';
-        console.log(`  TRIM-1: "${trim1Raw}" → "${trim1Clean}" → ${cleanGrade(record['TRIM-1'])}`);
-        
-        const trim2Raw = record['TRIM-2'];
-        const trim2Clean = trim2Raw ? trim2Raw.toString().trim().replace(',', '.') : '';
-        console.log(`  TRIM-2: "${trim2Raw}" → "${trim2Clean}" → ${cleanGrade(record['TRIM-2'])}`);
-        
-        const trim3Raw = record['TRIM-3'];
-        const trim3Clean = trim3Raw ? trim3Raw.toString().trim().replace(',', '.') : '';
-        console.log(`  TRIM-3: "${trim3Raw}" → "${trim3Clean}" → ${cleanGrade(record['TRIM-3'])}`);
-        
-        const promedioRaw = record['PROMEDIO'];
-        const promedioClean = promedioRaw ? promedioRaw.toString().trim().replace(',', '.') : '';
-        console.log(`  PROMEDIO: "${promedioRaw}" → "${promedioClean}" → ${cleanGrade(record['PROMEDIO'])}`);
 
-        // Debug: mostrar valores procesados
-        console.log('Valores procesados:');
-        console.log('trim1:', trim1);
-        console.log('trim2:', trim2);
-        console.log('trim3:', trim3);
-        console.log('promedio:', promedio);
 
         // Función para formatear notas en la tabla - CORREGIDA
+        function normalizeText(text) {
+            // Función para normalizar texto: quitar tildes y convertir a minúsculas
+            return text?.normalize("NFD")
+                       .replace(/[\u0300-\u036f]/g, "") // Quita tildes
+                       .toLowerCase()
+                       .trim();
+        }
+
+        function isQualitativeSubject(asignatura, subnivel) {
+            // Comprobar si es una asignatura que siempre usa calificación cualitativa
+            const qualitativeSubjects = [
+                'animacion a la lectura',
+                'orientacion vocacional y profesional'
+            ];
+            
+            // Normalizar la asignatura para la comparación
+            const normalizedAsignatura = normalizeText(asignatura);
+            const normalizedSubnivel = normalizeText(subnivel);
+            
+            // Verificar si es nivel elemental o si es una asignatura especial en básica superior
+            return (
+                normalizedSubnivel?.includes('elemental') ||
+                (normalizedSubnivel?.includes('superior') && 
+                qualitativeSubjects.includes(normalizedAsignatura))
+            );
+        }
+
         function formatGrade(nota) {
             if (nota === null || nota === undefined) {
                 return '<span class="grade-cell" style="background: #e5e7eb; color: #6b7280; border: 1px solid #d1d5db;">-</span>';
             }
-            
+
+            // Verificar si debe usar calificación cualitativa
+            const shouldBeQualitative = isQualitativeSubject(record['ASIGNATURA'], record['SUBNIVEL']);
+
             let gradeClass = '';
-            if (nota >= 9) gradeClass = 'grade-excellent';
-            else if (nota >= 7) gradeClass = 'grade-good';
-            else if (nota >= 5) gradeClass = 'grade-regular';
-            else gradeClass = 'grade-poor';
+            let displayValue = '';
+
+            if (shouldBeQualitative) {
+                // Sistema cualitativo
+                if (nota >= 9.5) { gradeClass = 'grade-excellent'; displayValue = 'A+'; }
+                else if (nota >= 8.5) { gradeClass = 'grade-excellent'; displayValue = 'A-'; }
+                else if (nota >= 7.5) { gradeClass = 'grade-good'; displayValue = 'B+'; }
+                else if (nota >= 6.5) { gradeClass = 'grade-good'; displayValue = 'B-'; }
+                else if (nota >= 5.5) { gradeClass = 'grade-regular'; displayValue = 'C+'; }
+                else if (nota >= 4.5) { gradeClass = 'grade-regular'; displayValue = 'C-'; }
+                else if (nota >= 3.5) { gradeClass = 'grade-poor'; displayValue = 'D+'; }
+                else if (nota >= 2.5) { gradeClass = 'grade-poor'; displayValue = 'D-'; }
+                else if (nota >= 1.5) { gradeClass = 'grade-poor'; displayValue = 'E+'; }
+                else if (nota > 0) { gradeClass = 'grade-poor'; displayValue = 'E-'; }
+                else { gradeClass = 'grade-poor'; displayValue = 'NE'; }
+            } else {
+                // Sistema numérico para otros niveles
+                if (nota >= 9) gradeClass = 'grade-excellent';
+                else if (nota >= 7) gradeClass = 'grade-good';
+                else if (nota >= 5) gradeClass = 'grade-regular';
+                else gradeClass = 'grade-poor';
+                displayValue = nota.toFixed(2).replace(/\.?0+$/, '');
+            }
             
-            // *** CORRECCIÓN: Usar más decimales para mostrar valores exactos ***
-            return `<span class="grade-cell ${gradeClass}">${nota.toFixed(2).replace(/\.?0+$/, '')}</span>`;
+            return `<span class="grade-cell ${gradeClass}">${displayValue}</span>`;
         }
 
         // *** NUEVA LÓGICA: Solo mostrar promedio y estado si hay notas en los 3 trimestres ***
@@ -417,7 +715,6 @@ function mostrarCalificaciones(studentRecords) {
 
         row.innerHTML = `
             <td><strong>${asignatura}</strong></td>
-            <td>${docente}</td>
             <td>${formatGrade(trim1)}</td>
             <td>${formatGrade(trim2)}</td>
             <td>${formatGrade(trim3)}</td>

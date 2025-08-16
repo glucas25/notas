@@ -1,0 +1,88 @@
+/* Estilos para estadísticas detalladas */
+.detailed-stats {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--background-alt);
+    border-radius: var(--radius);
+}
+
+.stats-section {
+    background: var(--card);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.stats-section h4 {
+    font-size: 1.2em;
+    color: var(--primary);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stats-list {
+    display: grid;
+    gap: 10px;
+}
+
+.stat-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: var(--background-alt);
+    border-radius: calc(var(--radius) - 8px);
+    transition: transform 0.2s ease;
+}
+
+.stat-item:hover {
+    transform: translateX(5px);
+}
+
+.stat-item .rank {
+    font-weight: bold;
+    color: var(--primary);
+    min-width: 30px;
+}
+
+.stat-item .name {
+    font-weight: 500;
+}
+
+.stat-item .value {
+    font-weight: bold;
+    padding: 4px 8px;
+    background: var(--primary);
+    color: white;
+    border-radius: 4px;
+}
+
+.stat-item .details {
+    grid-column: 2 / -1;
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+.stat-item .teachers {
+    grid-column: 1 / -1;
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    margin-top: 5px;
+}
+
+.teachers-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.teacher-item {
+    padding: 8px 12px;
+    background: var(--background-alt);
+    border-radius: calc(var(--radius) - 8px);
+    font-size: 0.9em;
+}
