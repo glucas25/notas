@@ -6,7 +6,7 @@
 
 // Esta es la URL donde está publicada nuestra hoja de Google Sheets como CSV
 // El formato CSV es como una tabla de Excel pero en texto plano, más fácil de procesar
-const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQHavXVZRWfLBb3ShB2Xc8BpowBE5UU0vbNt6hDkUuoNMyKxWyCRSZmQMmAuvX-7OpjpMmfWHIRdpsN/pub?gid=1366029331&single=true&output=csv';
+const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQHavXVZRWfLBb3ShB2Xc8BpowBE5UU0vbNt6hDkUuoNMyKxWyCRSZmQMmAuvX-7OpjpMmfWHIRdpsN/pub?gid=1774254905&single=true&output=csv';
 // Variables globales que usaremos en toda la aplicación
 let studentData = [];        // Aquí guardaremos todos los datos de los estudiantes
 let lastUpdateTime = null;   // Guarda la última vez que actualizamos los datos
